@@ -13,7 +13,7 @@ function uuid() {
   return (response);
 }
 
-async function generate(message, parentId = uuid(), conversationId = null) {
+async function generate(message, parentId = uuid(), conversationId = null, action = 'next') {
   const cookies = (await fetch('https://chat.openai.com/', {
     headers: {
       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -63,7 +63,7 @@ async function generate(message, parentId = uuid(), conversationId = null) {
   }
   // console.log(token)
   const body = {
-    action: 'next',
+    action, // 'next' for new prompts, 'variant' for regenerating a response for the same prompt
     'messages': [
       {
         id: uuid(),
@@ -115,6 +115,6 @@ async function generate(message, parentId = uuid(), conversationId = null) {
   return { message: finalMessage.message.content.parts[0], messageId: finalMessage.message.id, conversationId: finalMessage.conversation_id };
 };
 (async () => {
-  const conversation = (await generate('Hello, I am John'))
-  console.log((await generate('Repeat what I just said:', conversation.messageId, conversation.conversationId)).message)
-})()
+  const conversation = (await generate('Hello, I am John'));
+  console.log((await generate('Repeat what I just said:', conversation.messageId, conversation.conversationId)).message);
+})();
