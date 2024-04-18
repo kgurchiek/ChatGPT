@@ -76,7 +76,7 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
       }
     ],
     parent_message_id: parentId,
-    model: "text-davinci-002-render-sha",
+    model: 'text-davinci-002-render-sha',
     timezone_offset_min: 240,
     history_and_training_disabled: false,
     conversation_mode: { kind: 'primary_assistant' },
@@ -84,10 +84,10 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
     force_paragen_model_slug: '',
     force_nulligen: false,
     force_rate_limit: false,
-    websocket_request_id: "bd96e15e-0197-4593-9530-d7f032638bc5"
+    websocket_request_id: 'bd96e15e-0197-4593-9530-d7f032638bc5'
   }
   if (conversationId != null) body.conversation_id = conversationId; 
-  const response = await (await fetch("https://chat.openai.com/backend-anon/conversation", {
+  const response = await (await fetch('https://chat.openai.com/backend-anon/conversation', {
     headers: {
       accept: 'text/event-stream',
       'accept-language': 'en-US,en;q=0.9',
