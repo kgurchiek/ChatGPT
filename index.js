@@ -59,7 +59,7 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
     token = JSON.parse(token).token;
   } catch (error) {
     // console.log(token)
-    return;
+    return null;
   }
   // console.log(token)
   const body = {
@@ -86,7 +86,7 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
     force_rate_limit: false,
     websocket_request_id: 'bd96e15e-0197-4593-9530-d7f032638bc5'
   }
-  if (conversationId != null) body.conversation_id = conversationId; 
+  if (conversationId != null) body.conversation_id = conversationId;
   const response = await (await fetch('https://chat.openai.com/backend-anon/conversation', {
     headers: {
       accept: 'text/event-stream',
