@@ -10,9 +10,10 @@ function uuid() {
   for (let i = 0; i < 4; i++) response += chars[Math.floor(Math.random() * chars.length)];
   response += '-';
   for (let i = 0; i < 12; i++) response += chars[Math.floor(Math.random() * chars.length)];
+  return (response);
 }
 
-async function generate(message) {
+async function generate(message, parentId = uuid(), conversationId = null) {
   const cookies = (await fetch('https://chat.openai.com/', {
     headers: {
       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -34,7 +35,7 @@ async function generate(message) {
   })).headers.getSetCookie();
   let oaiId;
   for (const setCookie of cookies) for (const cookie of setCookie.split('; ')) if (cookie.startsWith('oai-did=')) oaiId = cookie.substring(8); 
-  console.log(oaiId);
+  // console.log(oaiId);
   let token = await (await fetch('https://chat.openai.com/backend-anon/sentinel/chat-requirements', {
     headers: {
       accept: '*/*',
@@ -57,10 +58,35 @@ async function generate(message) {
   try {
     token = JSON.parse(token).token;
   } catch (error) {
-    console.log(token)
+    // console.log(token)
     return;
   }
-  console.log(token)
+  // console.log(token)
+  const body = {
+    action: 'next',
+    'messages': [
+      {
+        id: uuid(),
+        author: { role: 'user' },
+        content: {
+          'content_type': 'text',
+          parts: [ message ]
+        },
+        metadata: {}
+      }
+    ],
+    parent_message_id: parentId,
+    model: "text-davinci-002-render-sha",
+    timezone_offset_min: 240,
+    history_and_training_disabled: false,
+    conversation_mode: { kind: 'primary_assistant' },
+    force_paragen: false,
+    force_paragen_model_slug: '',
+    force_nulligen: false,
+    force_rate_limit: false,
+    websocket_request_id: "bd96e15e-0197-4593-9530-d7f032638bc5"
+  }
+  if (conversationId != null) body.conversation_id = conversationId; 
   const response = await (await fetch("https://chat.openai.com/backend-anon/conversation", {
     headers: {
       accept: 'text/event-stream',
@@ -79,34 +105,16 @@ async function generate(message) {
       'Referer': 'https://chat.openai.com/',
       'Referrer-Policy': 'strict-origin-when-cross-origin'
     },
-    body: JSON.stringify({
-      action: 'next',
-      'messages': [
-        {
-          id: uuid(),
-          author: { role: 'user' },
-          content: {
-            'content_type': 'text',
-            parts: [ message ]
-          },
-          metadata: {}
-        }
-      ],
-      parent_message_id: '90ef164d-f62f-4e43-a355-5759cadf1003',
-      model: "text-davinci-002-render-sha",
-      timezone_offset_min: 240,
-      history_and_training_disabled: false,
-      conversation_mode: { kind: 'primary_assistant' },
-      force_paragen: false,
-      force_paragen_model_slug: '',
-      force_nulligen: false,
-      force_rate_limit: false,
-      websocket_request_id: "bd96e15e-0197-4593-9530-d7f032638bc5"
-    }),
+    body: JSON.stringify(body),
     method: 'POST'
   })).text();
 
   // console.log(response);
-  return JSON.parse(response.split('\n\ndata: ')[response.split('\n\ndata: ').length - 2]).message.content.parts[0];
+  const finalMessage = JSON.parse(response.split('\n\ndata: ')[response.split('\n\ndata: ').length - 2]);
+  // console.log(finalMessage)
+  return { message: finalMessage.message.content.parts[0], messageId: finalMessage.message.id, conversationId: finalMessage.conversation_id };
 };
-generate('Hello!');
+(async () => {
+  const conversation = (await generate('Hello, I am John'))
+  console.log((await generate('Repeat what I just said:', conversation.messageId, conversation.conversationId)).message)
+})()
