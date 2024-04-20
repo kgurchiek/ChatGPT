@@ -35,13 +35,13 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
   })).headers.getSetCookie();
   let oaiId;
   for (const setCookie of cookies) for (const cookie of setCookie.split('; ')) if (cookie.startsWith('oai-did=')) oaiId = cookie.substring(8); 
-  // console.log(oaiId);
+  console.log(oaiId);
   let token = await (await fetch('https://chat.openai.com/backend-anon/sentinel/chat-requirements', {
     headers: {
       accept: '*/*',
       'accept-language': 'en-US,en;q=0.9',
       'content-type': 'application/json',
-      'oai-device-id': 'ce4c3797-8f78-4185-a562-0c704c8ca09e',
+      'oai-device-id': oaiId,
       'oai-language': 'en-US',
       'sec-ch-ua': '\'Chromium\';v=\'123\', \'Not:A-Brand\';v=\'8\'',
       'sec-ch-ua-mobile': '?0',
@@ -49,7 +49,7 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
-      'Referer': 'https://chat.openai.com/',
+      Referer: 'https://chat.openai.com/',
       'Referrer-Policy': 'strict-origin-when-cross-origin'
     },
     body: '{}',
@@ -61,7 +61,7 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
     // console.log(token)
     return null;
   }
-  // console.log(token)
+  console.log(token)
   const body = {
     action, // 'next' for new prompts, 'variant' for regenerating a response for the same prompt
     'messages': [
@@ -92,7 +92,7 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
       accept: 'text/event-stream',
       'accept-language': 'en-US,en;q=0.9',
       'content-type': 'application/json',
-      'oai-device-id': 'ce4c3797-8f78-4185-a562-0c704c8ca09e',
+      'oai-device-id': oaiId,
       'oai-language': 'en-US',
       'openai-sentinel-chat-requirements-token': token,
       'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"',
@@ -111,10 +111,10 @@ async function generate(message, parentId = uuid(), conversationId = null, actio
 
   // console.log(response);
   const finalMessage = JSON.parse(response.split('\n\ndata: ')[response.split('\n\ndata: ').length - 2]);
-  // console.log(finalMessage)
-  return { message: finalMessage.message.content.parts[0], messageId: finalMessage.message.id, conversationId: finalMessage.conversation_id };
+  console.log(finalMessage)
+  // return { message: finalMessage.message.content.parts[0], messageId: finalMessage.message.id, conversationId: finalMessage.conversation_id };
 };
 (async () => {
   const conversation = (await generate('Hello, I am John'));
-  console.log((await generate('Repeat what I just said:', conversation.messageId, conversation.conversationId)).message);
+  // console.log((await generate('Repeat what I just said:', conversation.messageId, conversation.conversationId)).message);
 })();
